@@ -1,5 +1,5 @@
 # Chip-8-emulator
-A chip-8 emulator written in C++
+A chip-8 emulator written in C++ with SDL2
 Little side-project for getting into emulators development.
 
 ## USAGE

@@ -2,6 +2,6 @@
 A chip-8 emulator written in C++
 Little side-project for getting into emulators development.
 
-##TODO:
+## TODO:
 1. sound
 2. keyboard input

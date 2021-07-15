@@ -89,9 +89,7 @@ int Cpu::loadRam(char *pathname)
     fseek(fr, 0, SEEK_END);
     fsize = ftell(fr);
     fseek(fr, 0, SEEK_SET);
-    printf("prima read\n");
-    fread(this->ram+0x200, 1, fsize, fr);
-    printf("dopo read\n");    
+    fread(this->ram+0x200, 1, fsize, fr);   
     fclose(fr);
     return 0;
 }
@@ -103,15 +101,13 @@ void Cpu::attachVideo(Video *video)
 Video::Video(){;}
 void Video::closeSDL()
 {
-    SDL_FreeSurface(this->screenSurface);
-    //Destroy window
-    SDL_DestroyWindow(this->window);
-    //Quit SDL subsystems
+    SDL_DestroyRenderer(gRenderer);
+    SDL_DestroyWindow(window);
     SDL_Quit();
 }
 void Video::init()
 {
-    for (int i = 0; i < 32; ++i)
+    for (int i = 0; i < 64*32; ++i)
     {
         screenBuffer[i] = 0;
     }
@@ -135,7 +131,7 @@ void Video::init()
             //Get window surface
             this->screenSurface = SDL_GetWindowSurface( this->window );
 
-            //Fill the surface white
+            //Fill the surface black
             SDL_FillRect( this->screenSurface, NULL, 
                     SDL_MapRGB(this->screenSurface->format, 0x00, 0x00, 0x00 ));
             
@@ -155,7 +151,7 @@ void Video::clear()
 {
     for(int i = 0; i < 64*32; ++i)
     {
-        this->screenBuffer[i] = 1;
+        this->screenBuffer[i] = 0;
     }
 }
 /*
@@ -184,9 +180,9 @@ uint8_t Video::drawSprite(uint8_t x, uint8_t y, uint8_t *sprite, uint8_t rows)
         {
             pix = (temp & 0x80) >> 7; //takes the most significant bit
             index = indexof((i + y) % 32, (j + x) % 64, 64);
-            currentPix = this->screenBuffer[index];
-            this->screenBuffer[index] ^= pix;
-            if(currentPix == 1 &&  screenBuffer[index]!= 1)
+            currentPix = screenBuffer[index];
+            screenBuffer[index] ^= pix;
+            if(currentPix == 1 &&  screenBuffer[index] == 0)
             {
                 modified = 1;
             }
@@ -200,8 +196,6 @@ void Video::update()
     SDL_Rect pixel;
     int size2 = (SCREEN_WIDTH / 64);
     int size1 = (SCREEN_HEIGHT / 32);
-    //SDL_SetRenderDrawColor(this->gRenderer, 0x00, 0x00, 0x00, 0x00);
-    //SDL_RenderClear(this->gRenderer);
     for(int i = 0; i < 32; ++i)
     {
         for(int j = 0; j < 64; ++j)
@@ -269,19 +263,9 @@ int main(int argc, char** argv)
     int frameDelay = 1000 / FPS;
     uint32_t frameStart;
     int frameTime;
-    int x = 0;
-    int y = 0;
-    
-    //TESTING
-    uint8_t test[4] = {0x3c,0x3c,0x3c,0x3c};
-    //video.drawSprite(0,0,test,4);
     
     while(!end)
     {
-        //video.clear();
-        //video.drawSprite(x,y,test,4);
-        //x++;
-        //y++;
         frameStart = SDL_GetTicks();
         
         while( SDL_PollEvent( &e ) != 0 )
@@ -302,7 +286,6 @@ int main(int argc, char** argv)
         }
     }
     video.closeSDL();
-    //cpu.printRam();
     return 0;
 }
 
@@ -310,7 +293,6 @@ void Cpu::execute()
 {   
     //fetch opcode
     uint16_t opcode = (uint16_t)((this->ram[this->pc] << 8) | (this->ram[this->pc + 1]));
-    //printf("[0x%04x] = 0x%04x,   sp=0x%04x\n", this->pc, opcode, this->sp);
     if(opcode == 0x00E0)    //cls
     {
         this->video->clear();

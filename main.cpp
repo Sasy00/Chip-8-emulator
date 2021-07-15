@@ -55,14 +55,6 @@ typedef struct Cpu
     void printRam();
 }Cpu;
 
-/*
-      012
-      ___
-    0|012
-    1|345
-    2|678
-*/
-
 int indexof(int row, int col, int nCols)
 {
     return row * nCols + col;
@@ -71,10 +63,10 @@ int indexof(int row, int col, int nCols)
 Cpu::Cpu(){;}
 void Cpu::init()
 {
-    this->pc = 0x200;
-    this->dt = 0;
-    this->st = 0;
-    this->sp = 0;
+    pc = 0x200;
+    dt = 0;
+    st = 0;
+    sp = 0;
 }
 
 //return 1 if error occurs, else 0
@@ -89,13 +81,13 @@ int Cpu::loadRam(char *pathname)
     fseek(fr, 0, SEEK_END);
     fsize = ftell(fr);
     fseek(fr, 0, SEEK_SET);
-    fread(this->ram+0x200, 1, fsize, fr);   
+    fread(ram+0x200, 1, fsize, fr);   
     fclose(fr);
     return 0;
 }
 void Cpu::attachVideo(Video *video)
 {
-    this->video = video;
+    video = video;
 }
 
 Video::Video(){;}
@@ -118,10 +110,10 @@ void Video::init()
     else
     {
         //Create window
-        this->window = SDL_CreateWindow( "Chip-8", SDL_WINDOWPOS_UNDEFINED, 
+        window = SDL_CreateWindow( "Chip-8", SDL_WINDOWPOS_UNDEFINED, 
                 SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, 
                 SDL_WINDOW_SHOWN );
-        if( this->window == NULL )
+        if( window == NULL )
         {
             printf( "Window could not be created! SDL_Error: %s\n", 
                     SDL_GetError() );
@@ -129,17 +121,17 @@ void Video::init()
         else
         {
             //Get window surface
-            this->screenSurface = SDL_GetWindowSurface( this->window );
+            screenSurface = SDL_GetWindowSurface( window );
 
             //Fill the surface black
-            SDL_FillRect( this->screenSurface, NULL, 
-                    SDL_MapRGB(this->screenSurface->format, 0x00, 0x00, 0x00 ));
+            SDL_FillRect( screenSurface, NULL, 
+                    SDL_MapRGB(screenSurface->format, 0x00, 0x00, 0x00 ));
             
             //Update the surface
-            SDL_UpdateWindowSurface( this->window );
-            this->gRenderer = SDL_CreateRenderer( this->window, -1, 
+            SDL_UpdateWindowSurface( window );
+            gRenderer = SDL_CreateRenderer( window, -1, 
                                                   SDL_RENDERER_ACCELERATED );
-			if( this->gRenderer == NULL )
+			if( gRenderer == NULL )
 			{
 				printf( "Renderer could not be created! SDL Error: %s\n", 
 				        SDL_GetError() );
@@ -151,13 +143,13 @@ void Video::clear()
 {
     for(int i = 0; i < 64*32; ++i)
     {
-        this->screenBuffer[i] = 0;
+        screenBuffer[i] = 0;
     }
 }
 /*
     x,y = screen position of the sprite
     sprite is an array of #rows 8bit numbers.
-    each bit represent a pixel insithe the sprite
+    each bit represent a pixel inside the the sprite
     00000
     01110
     00000
@@ -200,19 +192,19 @@ void Video::update()
     {
         for(int j = 0; j < 64; ++j)
         {
-            if(this->screenBuffer[indexof(i, j, 64)])
+            if(screenBuffer[indexof(i, j, 64)])
             {
-                SDL_SetRenderDrawColor(this->gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+                SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
             }
             else
             {
-                SDL_SetRenderDrawColor(this->gRenderer, 0x00, 0x00, 0x00, 0x00);
+                SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0x00);
             }
             pixel = {j * size1, i * size2, size1, size2};
-            SDL_RenderFillRect(this->gRenderer, &pixel);       
+            SDL_RenderFillRect(gRenderer, &pixel);       
         }
     }
-    SDL_RenderPresent( this->gRenderer ); 
+    SDL_RenderPresent(gRenderer); 
 }
 
 
@@ -292,15 +284,15 @@ int main(int argc, char** argv)
 void Cpu::execute()
 {   
     //fetch opcode
-    uint16_t opcode = (uint16_t)((this->ram[this->pc] << 8) | (this->ram[this->pc + 1]));
+    uint16_t opcode = (uint16_t)((ram[pc] << 8) | (ram[pc + 1]));
     if(opcode == 0x00E0)    //cls
     {
-        this->video->clear();
+        video->clear();
     }
     else if(opcode == 0x00EE)   //ret
     {
-        this->pc = this->stack[this->sp - 1];
-        this->sp--;
+        pc = stack[sp - 1];
+        sp--;
     }
     else
     {
@@ -309,21 +301,21 @@ void Cpu::execute()
         {
             case 1: //jp addr
             {
-                this->pc = (opcode & 0x0FFF) - 2; 
+                pc = (opcode & 0x0FFF) - 2; 
                 break; 
             }
             case 2: //call addr
             {
-                this->stack[this->sp] = this->pc;
-                ++(this->sp);
-                this->pc = (opcode & 0x0FFF)-2;  
+                stack[sp] = pc;
+                ++(sp);
+                pc = (opcode & 0x0FFF)-2;  
                 break;
             }
             case 3://se vx, byte
             {
                 uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
                 uint8_t op2 = (uint8_t) opcode & 0x00FF;
-                if(this->v[op1] == op2)
+                if(v[op1] == op2)
                     pc += 2;
                 break;
             }
@@ -331,7 +323,7 @@ void Cpu::execute()
             {
                 uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
                 uint8_t op2 = (uint8_t) opcode & 0x00FF;
-                if(this->v[op1] != op2)
+                if(v[op1] != op2)
                     pc += 2;
                 break;
             }
@@ -339,7 +331,7 @@ void Cpu::execute()
             {
                 uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
                 uint8_t op2 = (uint8_t) ((opcode & 0x00F0) >> 4);
-                if(this->v[op1] == this->v[op2])
+                if(v[op1] == v[op2])
                 {
                     pc += 2;
                 }
@@ -349,14 +341,14 @@ void Cpu::execute()
             {
                 uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
                 uint8_t op2 = (uint8_t) ((opcode & 0x00FF));
-                this->v[op1] = op2;
+                v[op1] = op2;
                 break;
             }
             case 7://add vx, byte
             {
                 uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
                 uint8_t op2 = (uint8_t) ((opcode & 0x00FF));
-                this->v[op1] += op2;
+                v[op1] += op2;
                 break;
             }
             case 8:
@@ -367,37 +359,37 @@ void Cpu::execute()
                 switch(mode)
                 {
                     case 0://ld vx,vy
-                        this->v[op1] = this->v[op2];
+                        v[op1] = v[op2];
                         break;
                     case 1:
-                        this->v[op1] |= this->v[op2];
+                        v[op1] |= v[op2];
                         break;
                     case 2:
-                        this->v[op1] &= this->v[op2];
+                        v[op1] &= v[op2];
                         break;
                     case 3:
-                        this->v[op1] ^= this->v[op2];
+                        v[op1] ^= v[op2];
                         break;
                     case 4:
-                        this->v[op1] += this->v[op2]; break;
+                        v[op1] += v[op2]; break;
                     case 5:
-                        this->v[op1] -= this->v[op2]; break;
+                        v[op1] -= v[op2]; break;
                     case 6:
-                        this->v[0x0F] = this->v[op1] & 0x01;
-                        this->v[op1] = this->v[op1] >> 1;
+                        v[0x0F] = v[op1] & 0x01;
+                        v[op1] = v[op1] >> 1;
                         break;
                     case 7:
                     {
-                        if(this->v[op2] > this->v[op1])
-                            this->v[0x0F] = 1;
+                        if(v[op2] > v[op1])
+                            v[0x0F] = 1;
                         else
-                            this->v[0x0F] = 0;
-                        this->v[op1] = this->v[op2] - this->v[op1];
+                            v[0x0F] = 0;
+                        v[op1] = v[op2] - v[op1];
                         break;
                     }
                     case 0x0E:
-                        this->v[0x0F] = (this->v[op1] & 0x80)>>7; //1000 0000
-                        this->v[op1] = this->v[op1] << 1;
+                        v[0x0F] = (v[op1] & 0x80)>>7; //1000 0000
+                        v[op1] = v[op1] << 1;
                         break;
                     default: break;
                 }
@@ -407,25 +399,25 @@ void Cpu::execute()
             {
                 uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
                 uint8_t op2 = (uint8_t) ((opcode & 0x00F0) >> 4);
-                if(this->v[op1] != this->v[op2])
+                if(v[op1] != v[op2])
                     pc += 2;
                 break;
             }
             case 0x0A://ld I, addr
             {
-                this->i = opcode & 0x0FFF;
+                i = opcode & 0x0FFF;
                 break;
             }
             case 0x0B://jp v0, addr
             {
-                pc = (opcode & 0x0FFF) + this->v[0] - 2;
+                pc = (opcode & 0x0FFF) + v[0] - 2;
                 break;
             }
             case 0x0C://rnd vx, byte
             {
                 uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
                 uint8_t op2 = (uint8_t) ((opcode & 0x00FF));
-                this->v[op1] = ((uint8_t)(rand() % 256)) & op2;
+                v[op1] = ((uint8_t)(rand() % 256)) & op2;
                 break;
             }
             case 0x0D://drw vx,vy, nibble
@@ -437,10 +429,10 @@ void Cpu::execute()
                 //uint8_t buffer[] = {0x3c,0x3c,0x3c,0x3c};
                 for(int i = 0; i < op3; ++i)
                 {
-                    buffer[i] = this->ram[this->i + i];
+                    buffer[i] = ram[i + i];
                 }
-                this->v[0x0F] = video->drawSprite(this->v[op1], 
-                        this->v[op2], buffer, op3);
+                v[0x0F] = video->drawSprite(v[op1], 
+                        v[op2], buffer, op3);
                 delete buffer;
                 break;   
             }
@@ -459,7 +451,7 @@ void Cpu::execute()
                     {
                         //uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
                         //KEYBOARD
-                        this->pc += 2;
+                        pc += 2;
                         break;
                     }
                     default: break;
@@ -474,41 +466,41 @@ void Cpu::execute()
                     case 0x07: //ld vx, dt
                     {
                         uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
-                        this->v[op1] = this->dt;
+                        v[op1] = dt;
                         break;
                     }
                     case 0x0A: //ld vx,k
                     {
                         //KEYPRESS WITH STOP
                         uint8_t op1 = (uint8_t)((opcode & 0xF00) >> 8);
-                        this->v[op1] = '0';
+                        v[op1] = '0';
                         break;
                     }
                     case 0x15: //ld dt, vx
                     {
                         uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
-                        this->dt = this->v[op1];
+                        dt = v[op1];
                         break;
                     }
                     case 0x1E: //add i, vx
                     {
                         uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
-                        this->i += this->v[op1];  
+                        i += v[op1];  
                         break;
                     }
                     case 0x29: //ld f, vx
                     {
                         uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
-                        uint8_t chara = this->v[op1];
-                        this->i = ((uint16_t)chara) * 5;
+                        uint8_t chara = v[op1];
+                        i = ((uint16_t)chara) * 5;
                         break;
                     }
                     case 0x33://ld b, vx
                     {
                         uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
-                        this->ram[i] = this->v[op1] / 100;
-                        this->ram[i+1] = (this->v[op1] / 10) % 10;
-                        this->ram[i+2] = this->v[op1] % 10;
+                        ram[i] = v[op1] / 100;
+                        ram[i+1] = (v[op1] / 10) % 10;
+                        ram[i+2] = v[op1] % 10;
                         break;
                     }
                     case 0x55://ld [i], vx
@@ -516,7 +508,7 @@ void Cpu::execute()
                         uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
                         for(int i = 0; i <= op1; ++i)
                         {
-                            this->ram[this->i + i] = this->v[i];
+                            ram[i + i] = v[i];
                         }
                         break;
                     }
@@ -525,7 +517,7 @@ void Cpu::execute()
                         uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
                         for(int i = 0; i <= op1; ++i)
                         {
-                            this->v[i] = this->ram[this->i + i];
+                            v[i] = ram[i + i];
                         }
                         break;
                     }
@@ -535,18 +527,18 @@ void Cpu::execute()
             default: break;   
         }
     }
-    this->pc += 2;
-    if(this->dt > 0)
-        this->dt--;
-    if(this->st > 0)
-        this->st--;
+    pc += 2;
+    if(dt > 0)
+        dt--;
+    if(st > 0)
+        st--;
 }
 
 void Cpu::printRam()
 {
     for(int i = 0; i < RAM_SIZE; ++i)
     {
-        printf("0x%02x | ", this->ram[i]);
+        printf("0x%02x | ", ram[i]);
     }
 }
 

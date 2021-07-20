@@ -15,7 +15,7 @@ public:
     uint8_t drawSprite(uint8_t x, uint8_t y, uint8_t *sprite, uint8_t rows);
     void update();
     void cls();
-    void closeSDL();
+    void deinit();
 
     inline static int indexof(int row, int col, int nCols)
     {

@@ -1,15 +1,12 @@
 #include "Cpu.h"
 #include "Chip8.h"
-Cpu::Cpu(Chip8 *a)
+Cpu::Cpu(Chip8 *a) : chip(a)
 {
-    chip = a;
 }
 
 void Cpu::init()
 {
     pc = 0x200;
-    dt = 0;
-    st = 0;
     sp = 0;
 
     uint8_t fonts[] = {0xf0,0x90,0x90,0x90,0xf0,
@@ -225,7 +222,7 @@ void Cpu::execute()
                     case 0x07: //ld vx, dt
                     {
                         uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
-                        v[op1] = dt;
+                        v[op1] = chip->getDT();
                         break;
                     }
                     case 0x0A: //ld vx,k
@@ -238,7 +235,13 @@ void Cpu::execute()
                     case 0x15: //ld dt, vx
                     {
                         uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
-                        dt = v[op1];
+                        chip->setDT(v[op1]);
+                        break;
+                    }
+                    case 0x18:
+                    {
+                        uint8_t op1 = (uint8_t) ((opcode & 0x0F00) >> 8);
+                        chip->setST(v[op1]);
                         break;
                     }
                     case 0x1E: //add i, vx
@@ -287,8 +290,4 @@ void Cpu::execute()
         }
     }
     pc += 2;
-    if(dt > 0)
-        dt--;
-    if(st > 0)
-        st--;
 }

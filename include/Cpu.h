@@ -18,9 +18,6 @@ private:
     uint16_t pc;            //program counter
     uint16_t i;
     
-    uint8_t dt;             //delay timer
-    uint8_t st;             //sound timer
-    
     uint8_t sp;             //stack pointer
     uint16_t stack[16];     //stack, used only for storing the pc before a call
     uint8_t ram[RAM_SIZE];

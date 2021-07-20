@@ -17,10 +17,21 @@ public:
     int loadRom(char *filename);
     void update();
     void deinit();
+    inline void setDT(uint8_t x) {dt = x;}
+    inline void setST(uint8_t x) {st = x;}
+    inline uint8_t getDT() const {return dt;}
+    inline uint8_t getST() const {return st;}
 
 private:
     Video video;
     Cpu cpu;
+    uint8_t dt;             //delay timer
+    uint8_t st;             //sound timer
 };
 
 #endif
+
+/*if(dt > 0)
+        dt--;
+    if(st > 0)
+        st--;*/

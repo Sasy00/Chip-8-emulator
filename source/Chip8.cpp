@@ -9,6 +9,8 @@ void Chip8::init()
 {
     cpu.init();
     video.init();
+    dt = 0;
+    st = 0;
 }
 
 int Chip8::loadRom(char *filename)
@@ -36,10 +38,10 @@ int Chip8::loadRom(char *filename)
 void Chip8::update()
 {
     cpu.execute();
-    video.update();
+    //video.update();
 }
 
 void Chip8::deinit()
 {
-    video.closeSDL();
+    video.deinit();
 }

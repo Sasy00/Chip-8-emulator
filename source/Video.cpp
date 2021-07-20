@@ -1,12 +1,12 @@
 #include "Video.h"
 #include "Chip8.h"
 
-Video::Video(Chip8 *back)
+Video::Video(Chip8 *a) : chip(a)
 {
-    chip = back;
+    
 }
 
-void Video::closeSDL()
+void Video::deinit()
 {
     SDL_DestroyRenderer(gRenderer);
     SDL_DestroyWindow(window);
@@ -59,6 +59,7 @@ void Video::cls()
     {
         screenBuffer[i] = 0;
     }
+    update();
 }
 
 /*
@@ -96,6 +97,7 @@ uint8_t Video::drawSprite(uint8_t x, uint8_t y, uint8_t *sprite, uint8_t rows)
             temp = temp << 1;
         }
     }
+    update();
     return modified;
 }
 

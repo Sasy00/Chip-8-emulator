@@ -27,11 +27,9 @@ private:
     Cpu cpu;
     uint8_t dt;             //delay timer
     uint8_t st;             //sound timer
+    uint32_t clock;
 };
 
 #endif
 
-/*if(dt > 0)
-        dt--;
-    if(st > 0)
-        st--;*/
+/*if*/

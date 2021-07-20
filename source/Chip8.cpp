@@ -7,6 +7,7 @@ Chip8::Chip8() : video(this), cpu(this)
 
 void Chip8::init()
 {
+    clock = SDL_GetTicks();
     cpu.init();
     video.init();
     dt = 0;
@@ -39,6 +40,16 @@ void Chip8::update()
 {
     cpu.execute();
     //video.update();
+    uint16_t now = SDL_GetTicks();
+    if(now - clock >= 1000/60)
+    {
+        if(dt > 0)
+            dt--;
+        if(st > 0)
+            st--;
+        clock = now;
+    }
+    
 }
 
 void Chip8::deinit()

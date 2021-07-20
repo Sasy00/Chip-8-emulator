@@ -12,7 +12,7 @@
 
 #include "Chip8.h"
 
-#define FPS 60
+#define FREQUENCY 400
 
 int main(int argc, char** argv)
 {  
@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     int end = 0;
     SDL_Event e;
     
-    int frameDelay = 1000 / FPS;
+    int frameDelay = 1000 / FREQUENCY;
     uint32_t frameStart;
     int frameTime;
     

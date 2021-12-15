@@ -12,7 +12,7 @@
 
 #include "Chip8.h"
 
-#define FREQUENCY 400
+#define FREQUENCY 500
 
 int main(int argc, char** argv)
 {  

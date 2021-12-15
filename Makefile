@@ -7,7 +7,7 @@ SDIR = ./source
 ODIR = ./obj
 
 CXX = g++
-CXX_FLAGS = -Wall -I$(IDIR)
+CXX_FLAGS = -Wall -I$(IDIR) -g
 LIBS = -lSDL2
 
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
